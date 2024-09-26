@@ -1,0 +1,5 @@
+n = int(input())
+a = list(map(int, input().split()))
+a = list(enumerate(a))
+a.sort(key=lambda x: x[1])
+print(a[-2][0] + 1)

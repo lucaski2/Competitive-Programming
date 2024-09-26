@@ -1,0 +1,10 @@
+2
+
+
+
+def draw(a, end):
+    if a == 0:
+        print("#")
+    
+    else:
+        for i in range()
