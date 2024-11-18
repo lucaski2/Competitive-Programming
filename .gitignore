@@ -1,4 +1,11 @@
+# Ignore everything by default
 *
+
+# Allow specific file types
 !*.cpp
 !*.py
 !*.in
+!.gitignore
+
+# Allow directories, but only include them if they have allowed files
+!*/
