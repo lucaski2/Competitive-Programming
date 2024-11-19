@@ -6,70 +6,191 @@
 using namespace std;
 
 
-int overlap_1d(int a1, int a2, int b1, int b2) {return max(0, min(a2, b2) - max(a1, b1));}
-int overlap_2d(int ax1, int ay1, int ax2, int ay2, int bx1, int by1, int bx2, int by2){ return overlap_1d(ax1, ax2, bx1, bx2) * overlap_1d(ay1, ay2, by1, by2);}
-double dist_squared(int x1, int y1, int x2, int y2){ return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);}
-double dist(int x1, int y1, int x2, int y2){ return sqrt(dist_squared(x1, y1, x2, y2));}
-vector<int> lin(int n) { vector<int> v(n); for (int i = 0; i < n; i++) cin >> v[i]; return v; }
-vector<vector<int>> lin2d(int n, int m) { vector<vector<int>> v(n, vector<int>(m)); for (int i = 0; i < n; i++) { for (int j = 0; j < m; j++) cin >> v[i][j];}  return v; }
-vector<vector<int>> linlayers(int n) { vector<vector<int>> v(n, vector<int>()); for (int i = 0; i < n; i++) { int m; cin >> m; for (int j = 0; j < m; j++) {int x; cin >> x;  v[i].push_back(x);}} return v;}
-vector<ll> linll(int n) { vector<ll> v(n); for (int i = 0; i < n; i++) cin >> v[i]; return v; }
-vector<vector<ll>> lin2dll(int n, int m) { vector<vector<ll>> v(n, vector<ll>(m)); for (int i = 0; i < n; i++) { for (int j = 0; j < m; j++) cin >> v[i][j];}  return v; }
-vector<vector<char>> lin2dc(int n, int m) { vector<vector<char>> v(n, vector<char>(m)); for (int i = 0; i < n; i++) { for (int j = 0; j < m; j++) cin >> v[i][j];}  return v; }
-vector<vector<int>> graph_edges_al(int n, int m) { vector<vector<int>> g(n); for (int i = 0; i < m; i++) { int a, b; cin >> a >> b; a--; b--; g[a].push_back(b); g[b].push_back(a);} return g;}
-vector<vector<int>> graph_edges_am(int n, int m) { vector<vector<int>> g(n, vector<int>(n, 0)); for (int i = 0; i < m; i++) { int a, b; cin >> a >> b; a--; b--; g[a][b] = 1; g[b][a] = 1;} return g;}
-template<typename T> optional<T> less_or_equal(const set<T>& s, const T& value) { if (s.empty()) { return nullopt; } auto it = s.upper_bound(value); if (it == s.begin()) { return nullopt; }return *prev(it);}
-vector<string> instr(int n) { vector<string> v(n); for (int i = 0; i < n; i++) cin >> v[i]; return v; }
+void make_component(vector<vector<pair<int, int>>> &undirected, vector<int> &component, vector<bool> &visited, vector<vector<pair<int, int>>> &trees, vector<bool> &visited_edges, int cur, int &leftover)
+{
+    component.push_back(cur);
+    visited[cur] = true;
+    for (pair<int, int> neighbor : undirected[cur])
+    {
+        if (not visited[neighbor.first])
+        {
+            trees[cur].push_back(neighbor);
+            trees[neighbor.first].push_back({cur, neighbor.second});
+            visited_edges[neighbor.second] = true;
+            make_component(undirected, component, visited, trees, visited_edges, neighbor.first, leftover);
+        }
+        else
+        {
 
+            if (leftover == -1 and not visited_edges[neighbor.second])
+            {
+                leftover = neighbor.second;
+                visited_edges[neighbor.second] = true;
+                trees[cur].push_back(neighbor);
+                trees[neighbor.first].push_back({cur, neighbor.second});
+            }
+        }
+        
+    }
+}
+
+void find_order(vector<vector<pair<int, int>>> &forest, vector<pair<int, int>> &cows, vector<bool> &visited, vector<bool> &taken_cereals, vector<int> &order, int current_edge)
+{
+    order.push_back(current_edge);
+    visited[current_edge] = true;
+    if (taken_cereals[cows[current_edge].first])
+    {
+        taken_cereals[cows[current_edge].second] = true;
+    }
+    else
+    {
+        taken_cereals[cows[current_edge].first] = true;
+    }
+
+    // explore both the left and the right cereal
+    for (pair<int, int> edge : forest[cows[current_edge].first])
+    {
+        if (not visited[edge.second])
+        {
+            find_order(forest, cows, visited, taken_cereals, order, edge.second);
+        }
+    }
+
+    for (pair<int, int> edge : forest[cows[current_edge].second])
+    {
+        if (not visited[edge.second])
+        {
+            find_order(forest, cows, visited, taken_cereals, order, edge.second);
+        }
+    }
+}
 
 
 int main()
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+    ios::sync_with_stdio(0);
+    cin.tie(nullptr);
+
+    int num_cows, num_cereals;
+    cin >> num_cows >> num_cereals;
     
-    int n, m;
-    cin >> n >> m;
-
-    vector<vector<int>> undirected(m);
-    vector<vector<int>> directed(m);
-
-    for (int i = 0; i < n; i++)
+    vector<vector<pair<int, int>>> undirected(num_cereals, vector<pair<int, int>>());
+    vector<pair<int, int>> cows(num_cows);
+    for (int i = 0; i < num_cows; i++)
     {
         int a, b;
         cin >> a >> b;
         a--; b--;
-        undirected[a].push_back(b);
-        undirected[b].push_back(a);
-        directed[a].push_back(b);
+        cows[i] = {a, b};
+        undirected[a].push_back({b, i});
+        undirected[b].push_back({a, i});
     }
 
-    vector<vector<int>> components;
-    vector<bool> visited(m, false);
-    for (int i = 0; i < n; i++)
+
+
+    vector<bool> visited(num_cereals, false);
+
+    vector<vector<pair<int, int>>> forest(num_cereals, vector<pair<int, int>>());
+
+    vector<bool> visited2(num_cows, false);
+    vector<bool> taken_cereals(num_cereals, false);
+    vector<int> final_order;
+    vector<bool> visited_edges(num_cows, false);
+
+    for (int i = 0; i < num_cereals; i++)
     {
         if (not visited[i])
         {
             vector<int> component;
-            int ind = 0;
-            component.push_back(i);
-            while (ind < component.size())
+            // create the component and make the tree for each component
+            // set start edge where dfs will start
+            int start_edge = -1;
+            
+            make_component(undirected, component, visited, forest, visited_edges, i, start_edge);
+
+            
+            if (component.size() == 1)
             {
-                int node = component[ind];
-                ind++;
-                visited[node] = true;
-                for (int neighbor : undirected[node])
-                {
-                    if (not visited[neighbor])
-                    {
-                        component.push_back(neighbor);
-                        visited[neighbor] = true;
-                    }
-                }
+                continue;
             }
-            components.push_back(component);
+
+
+
+            // for (int a : component)
+            // {
+            //     cout << a << ' ';
+            // }
+            // cout << en;
+
+            int num_edges_in_component = 0;
+            for (int v : component)
+            {
+                num_edges_in_component += undirected[v].size();
+            }
+            num_edges_in_component /= 2;
+
+            if (num_edges_in_component == component.size() - 1)
+            {
+                start_edge = undirected[i][0].second;
+            }
+            // cout << start_edge << en;
+
+            // dfs through the tree to find the order
+            vector<int> order;
+            find_order(forest, cows, visited2, taken_cereals, order, start_edge);
+            for (int id : order)
+            {
+                // cout << id << ' ';
+                final_order.push_back(id);
+            }
+
         }
     }
+
+
+    // for (int i = 0; i < num_cereals; i++)
+    // {
+    //     cout << i << ": ";
+    //     for (pair<int, int> edge : forest[i])
+    //     {
+    //         cout << edge.first << ' ';
+    //     }
+    //     cout << en;
+    // }
+
+
+    visited_edges.resize(num_cows, false);
+
+    for (int a : final_order)
+    {
+        visited_edges[a] = true;
+    }
+    int count = 0;
+    for (int i = 0; i < num_cows; i++)
+    {
+        if (not visited_edges[i])
+        {
+            final_order.push_back(i);
+            count++;
+        }
+    }
+
+    cout << count << en;
+    for (int a : final_order)
+    {
+        cout << a + 1 << en;
+    }
+
+
     
 
+
+
+
+
+
+
+
+
 }
+
