@@ -26,41 +26,31 @@ void make_component(vector<vector<pair<int, int>>> &undirected, vector<int> &com
             {
                 leftover = neighbor.second;
                 visited_edges[neighbor.second] = true;
-                trees[cur].push_back(neighbor);
-                trees[neighbor.first].push_back({cur, neighbor.second});
             }
         }
         
     }
 }
 
-void find_order(vector<vector<pair<int, int>>> &forest, vector<pair<int, int>> &cows, vector<bool> &visited, vector<bool> &taken_cereals, vector<int> &order, int current_edge)
+void dfs2(vector<vector<pair<int, int>>> &forest, vector<bool> &taken_cereals, vector<pair<int, int>> &cows, vector<bool> &visited_edges, vector<int> &order, int cur)
 {
-    order.push_back(current_edge);
-    visited[current_edge] = true;
-    if (taken_cereals[cows[current_edge].first])
+    
+    for (pair<int, int> neighbor : forest[cur])
     {
-        taken_cereals[cows[current_edge].second] = true;
-    }
-    else
-    {
-        taken_cereals[cows[current_edge].first] = true;
-    }
-
-    // explore both the left and the right cereal
-    for (pair<int, int> edge : forest[cows[current_edge].first])
-    {
-        if (not visited[edge.second])
+        if (not visited_edges[neighbor.second])
         {
-            find_order(forest, cows, visited, taken_cereals, order, edge.second);
-        }
-    }
-
-    for (pair<int, int> edge : forest[cows[current_edge].second])
-    {
-        if (not visited[edge.second])
-        {
-            find_order(forest, cows, visited, taken_cereals, order, edge.second);
+            visited_edges[neighbor.second] = true;
+            order.push_back(neighbor.second);
+            if (not taken_cereals[cows[neighbor.second].first])
+            {
+                taken_cereals[cows[neighbor.second].first] = true;
+                dfs2(forest, taken_cereals, cows, visited_edges, order, neighbor.first);
+            }
+            else 
+            {
+                taken_cereals[cows[neighbor.second].second] = true;
+                dfs2(forest, taken_cereals, cows, visited_edges, order, neighbor.first);
+            }
         }
     }
 }
@@ -68,6 +58,7 @@ void find_order(vector<vector<pair<int, int>>> &forest, vector<pair<int, int>> &
 
 int main()
 {
+
     ios::sync_with_stdio(0);
     cin.tie(nullptr);
 
@@ -92,7 +83,7 @@ int main()
 
     vector<vector<pair<int, int>>> forest(num_cereals, vector<pair<int, int>>());
 
-    vector<bool> visited2(num_cows, false);
+    vector<bool> visited_edges2(num_cows, false);
     vector<bool> taken_cereals(num_cereals, false);
     vector<int> final_order;
     vector<bool> visited_edges(num_cows, false);
@@ -116,34 +107,27 @@ int main()
 
 
 
-            // for (int a : component)
-            // {
-            //     cout << a << ' ';
-            // }
-            // cout << en;
 
-            int num_edges_in_component = 0;
-            for (int v : component)
-            {
-                num_edges_in_component += undirected[v].size();
-            }
-            num_edges_in_component /= 2;
 
-            if (num_edges_in_component == component.size() - 1)
-            {
-                start_edge = undirected[i][0].second;
-            }
-            // cout << start_edge << en;
-
-            // dfs through the tree to find the order
             vector<int> order;
-            find_order(forest, cows, visited2, taken_cereals, order, start_edge);
-            for (int id : order)
+
+            if (start_edge != -1)
             {
-                // cout << id << ' ';
-                final_order.push_back(id);
+                final_order.push_back(start_edge);
+                visited_edges[start_edge] = true;
+                taken_cereals[cows[start_edge].first] = true;
+                dfs2(forest, taken_cereals, cows, visited_edges2, order, cows[start_edge].first);
+            }
+            else
+            {
+                dfs2(forest, taken_cereals, cows, visited_edges2, order, component[0]);
             }
 
+
+            for (int a : order)
+            {
+                final_order.push_back(a);
+            }
         }
     }
 
@@ -193,4 +177,3 @@ int main()
 
 
 }
-
