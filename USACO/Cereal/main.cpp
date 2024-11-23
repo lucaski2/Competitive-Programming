@@ -21,7 +21,6 @@ void make_component(vector<vector<pair<int, int>>> &undirected, vector<int> &com
         }
         else
         {
-
             if (leftover == -1 and not visited_edges[neighbor.second])
             {
                 leftover = neighbor.second;
