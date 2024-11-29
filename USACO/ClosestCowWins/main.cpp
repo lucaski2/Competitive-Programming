@@ -1,199 +1,168 @@
 #include <bits/stdc++.h>
 #define ll long long
-#define mll 2147483647
 #define mod 1e9 + 7
 #define en '\n'
 using namespace std;
 
-
-bool comp(pair<ll, ll> a, pair<ll, ll> b)
+bool comp(tuple<ll, ll, ll> &a, tuple<ll, ll, ll> &b)
 {
-    return max(a.first, a.second) < max(b.first, b.second);
+  // comparison for max heap
+  return get<0>(a) < get<0>(b);
+}
+
+// function to find the item less than the key given
+ll find_less(map<double, pair<ll, ll>> &cur_patches, double key)
+{
+  auto it = cur_patches.lower_bound(key);
+  if (it == cur_patches.begin())
+    // if not found, return last element
+    return (--cur_patches.end())->second.second;
+  
+  // if found, return the previous element
+  return (--it)->second.second;
 }
 
 void solve()
 {
-    ll k, m, n;
-    cin >> k >> m >> n;
+  ll k, m, n;
+  cin >> k >> m >> n;
 
-    vector<pair<ll, ll>> patches(k);
-    for (ll i = 0; i < k; i++)
+  vector<pair<ll, ll>> patches(k);
+  vector<ll> cows(m);
+  for (ll i = 0; i < k; ++i)
+    cin >> patches[i].first >> patches[i].second;
+  for (ll i = 0; i < m; ++i)
+    cin >> cows[i];
+
+  sort(patches.begin(), patches.end());
+  sort(cows.begin(), cows.end());
+
+  // max partial then max full
+  vector<pair<ll, ll>> maxes;
+
+  // placement in number line, then pair of amount of food and prefix sum index
+  map<double, pair<ll, ll>> cur_patches;
+  ll prev = -2e9;
+
+  for (ll patch = 0, cow = 0; patch < k or cow < m;)
+  {
+    if (cow >= m or (patch < k and patches[patch].first < cows[cow]))
     {
-        ll x, y;
-        cin >> x >> y;
-        patches[i] = {x, y};
+      cur_patches[patches[patch].first] = {patches[patch].second, cur_patches.size()};
+      patch++;
     }
-
-    sort(patches.begin(), patches.end());
-
-    vector<ll> bad_cows(m);
-
-    for (ll i = 0; i < m; i++)
+    else
     {
-        cin >> bad_cows[i];
-    }
-
-    sort(bad_cows.begin(), bad_cows.end());
-
-    vector<ll> max_partials;
-    vector<ll> fulls;
-    
-    vector<pair<ll, ll>> cur;
-    ll cur_start = -mll;
-    ll patches_ind = 0;
-    ll cow_ind = 0;
-
-    while (patches_ind < k or cow_ind < m)
-    {
-        if (cow_ind >= m or (patches_ind < k and patches[patches_ind].first < bad_cows[cow_ind]))
+      if (!cur_patches.empty())
+      {
+        // find sum
+        ll full = 0;
+        for (auto item : cur_patches)
         {
-            if (patches[patches_ind].first != cur_start)
-            {
-                cur.push_back(patches[patches_ind]);
-            }
-            patches_ind++;
+          full += item.second.first;
         }
-        else 
+
+        // create prefix sum
+        vector<ll> prefix_sum;
+        prefix_sum.push_back(0);
+        for (auto item : cur_patches)
         {
-            if (cur.size() != 0)
-            {
-                // calculate max one cow and max two cow
-                ll max_two = 0;
-                
-                map<ll, ll> starts;
-                map<ll, ll> ends;
-                
-                for (pair<ll, ll> item : cur)
-                {
-                    max_two += item.second;
-
-                    ll ind = max(cur_start + 1, item.first - (bad_cows[cow_ind] - item.first - 1));
-                    starts[ind] += item.second;
-
-                    ind = min(bad_cows[cow_ind] - 1, item.first + (item.first - cur_start - 1));
-
-                    ends[ind] += item.second;
-                }
-                fulls.push_back(max_two);
-
-                vector<pair<ll, ll>> startsv;
-                vector<pair<ll, ll>> endsv;
-
-                for (auto item : starts)
-                {
-                    startsv.push_back({item.first, item.second});
-                }
-
-                for (auto item : ends)
-                {
-                    endsv.push_back({item.first, item.second});
-                }
-
-
-                ll ptr1 = 0;
-                ll ptr2 = 0;
-                ll max_amount = 0;
-                ll cur_amount = 0;
-                while (ptr1 < startsv.size() and ptr2 < endsv.size())
-                {
-                    if (startsv[ptr1].first <= endsv[ptr2].first)
-                    {
-                        cur_amount += startsv[ptr1].second;
-                        max_amount = max(max_amount, cur_amount);
-                        ptr1++;
-                    }
-                    else if (endsv[ptr2].first <= startsv[ptr1].first)
-                    {
-                        cur_amount -= endsv[ptr2].second;
-                        ptr2++;
-                    }
-                }
-
-                max_partials.push_back(max_amount);
-            }
-
-
-
-            cur_start = bad_cows[cow_ind];
-
-            cow_ind++;
-            cur.clear();
+          prefix_sum.push_back(prefix_sum.back() + item.second.first);
         }
-    }
 
-    if (cur.size() != 0)
+
+        // find max with one cow
+        ll max_part = 0;
+        for (auto item : cur_patches)
+        {
+          double bound = item.first + (cows[cow] - prev) / 2.0;
+          ll less = find_less(cur_patches, bound);
+          ll sum = prefix_sum[less + 1] - prefix_sum[item.second.second];
+          max_part = max(max_part, sum);  
+        }
+        maxes.push_back({max_part * 2, full});
+      }
+
+      prev = cows[cow];
+      cow++;
+      cur_patches.clear();
+    }
+  }
+
+  if (!cur_patches.empty())
+  {
+    ll full = 0;
+    for (auto item : cur_patches)
     {
-        ll max_ans = 0;
-        for (ll i = 0; i < cur.size(); i++)
-        {
-            max_ans += cur[i].second;
-        }
-        fulls.push_back(max_ans);
-        max_partials.push_back(max_ans);
+      full += item.second.first;
     }
+    maxes.push_back({full * 2, full});
+  }
 
-    // for (auto item : max_partials)
-    // {
-    //     cout << item << " ";
-    // }
+  // for (auto it : maxes)
+  // {
+  //   cout << it.first << " " << it.second << en;
+  // }
 
-    // cout << endl;
-    // for (auto item : fulls)
-    // {
-    //     cout << item << " ";
-    // }
 
-    vector<pair<ll, ll>> finals;
-    for (ll i = 0; i < max_partials.size(); i++)
+  vector<tuple<ll, ll, ll>> heap;
+  ll ans = 0;
+  
+  for (int i = 0; i < maxes.size(); ++i)
+  {
+    heap.push_back({max(maxes[i].first, maxes[i].second), i, maxes[i].first >= maxes[i].second});
+  }
+
+  make_heap(heap.begin(), heap.end(), comp);
+
+  while (n > 1)
+  {
+    tuple<ll, ll, ll> top = heap.front();
+    pop_heap(heap.begin(), heap.end(), comp);
+    heap.pop_back();
+    // cout << get<0>(top) << " " << get<1>(top) << " " << get<2>(top) << endl;
+
+    if (get<2>(top) == 1)
     {
-        finals.push_back({max_partials[i] * 2, fulls[i]});
+      ans += get<0>(top) / 2;
+      heap.push_back({(maxes[get<1>(top)].second - get<0>(top) / 2) * 2, get<1>(top), 2}); // 2 is for the final type
+      push_heap(heap.begin(), heap.end(), comp);
     }
-
-    sort(finals.begin(), finals.end(), comp);
-    vector<ll> final2;
-
-    ll ans = 0;
-    for (ll i = finals.size() - 1; i >= 0; i--)
+    else if (get<2>(top) == 0)
     {
-        if (finals[i].first > finals[i].second and n > 0)
-        {
-            ans += finals[i].first / 2;
-            n -= 1;
-            final2.push_back(finals[i].second - finals[i].first / 2);
-            
-        }
-        else if (n > 1)
-        {
-            ans += finals[i].first;
-            n -= 2;
-        }
-        else
-        {
-            final2.push_back(finals[i].first);
-        }
+      ans += get<0>(top);
+      n -= 1;
     }
-
-
-
-    sort(final2.begin(), final2.end());
-
-    for (ll i = final2.size() - 1; i >= 0 and n > 0; i--, n--)
+    else
     {
-        cout << final2[i] << endl;
-        ans += final2[i];
+      ans += get<0>(top) / 2;
     }
 
-    cout << ans << endl;
-    
+    n--;
+  }
+  if (n == 1)
+  {
+    while (!heap.empty())
+    {
+      tuple<ll, ll, ll> top = heap.front();
+      pop_heap(heap.begin(), heap.end(), comp);
+      heap.pop_back();
 
+      if (get<2>(top) != 0)
+      {
+        ans += get<0>(top) / 2;
+        break;
+      }
 
+    }
+  }
+
+  cout << ans << en;
 }
-
-
 
 int main()
 {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    solve();
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  solve();
 }
