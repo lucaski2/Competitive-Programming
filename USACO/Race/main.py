@@ -1,28 +1,23 @@
-from math import ceil
-inp = open("race.in", 'r')
-out = open("race.out", 'w')
 
-k, n = map(int, inp.readline().split())
+
+k, n = map(int, input().split())
 
 for _ in range(n):
-    x = int(inp.readline())
-    
-    dist = 0
-    speed = 1
-    ans = 10000000000
-    t = 0
-    while dist < k:
-        t += 1
+  x = int(input())
 
-        dist += speed
-        if speed < x:
-            speed += 1
-        else:
-            cur = (k - dist) / ((x + speed) / 2)
-            ans = min(ans, t + int(cur))
+  dist = 0
+  time = 0
+  for speed in range(1, 100000):
+    dist += speed
+    time += 1
+    if dist >= k:
+      print(time)
+      break
 
-    if ans > t:
-        ans = t
-    print(ans, file=out)
-
+    if speed >= x:
+      dist += speed
+      time += 1
+    if dist >= k:
+      print(time)
+      break
 

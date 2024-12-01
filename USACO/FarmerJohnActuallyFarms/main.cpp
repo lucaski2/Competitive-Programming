@@ -17,8 +17,10 @@ void solve()
     {
         cin >> get<0>(cows[i]);
     }
-    for (int i = 0; i < n; i++) cin >> get<1>(cows[i]);
-    for (int i = 0; i < n; i++) cin >> get<2>(cows[i]);
+    for (int i = 0; i < n; i++)
+        cin >> get<1>(cows[i]);
+    for (int i = 0; i < n; i++)
+        cin >> get<2>(cows[i]);
 
     sort(cows.begin(), cows.end(), compare);
 
@@ -29,51 +31,34 @@ void solve()
         // linear equation
         // y = get<1> (cows[i]) * x + get<0> (cows[i])
         // y = get<1> (cows[i + 1]) * x + get<0> (cows[i + 1])
-        int intercept_time;
-        try
+        // cout << (get<0>(cows[i]) - get<0>(cows[i + 1])) / (get<1>(cows[i]) - get<1>(cows[i + 1])) << endl;
+        if (get<1>(cows[i]) > get<1>(cows[i + 1]))
         {
-            intercept_time = (get<0> (cows[i + 1]) - get<0> (cows[i])) / (get<1> (cows[i]) - get<1> (cows[i + 1]));
-        }
-        catch (exception e)
-        {
-            // check if the two cows are parallel
-            if (get<1> (cows[i]) == get<1> (cows[i + 1]))
+            if (get<0>(cows[i]) <= get<0>(cows[i + 1]))
             {
-                // check if the two cows are on the same line
-                if (get<0> (cows[i]) == get<0> (cows[i + 1]))
-                {
-                    cout << "-1" << endl;
-                    return;
-                }
-                else if (get<0> (cows[i]) > get<0> (cows[i + 1]))
-                {
-                    cout << -1 << endl;
-                    return;
-                }
+                min_time = max(min_time, 1 + -(int)ceil(((double)get<0>(cows[i]) - (double)get<0>(cows[i + 1])) / ((double)get<1>(cows[i]) - (double)get<1>(cows[i + 1]))));
             }
-            continue;
         }
-        // cout << intercept_time << endl;
-        if (get<1> (cows[i]) > get<1> (cows[i + 1]))
+        else if (get<1>(cows[i]) < get<1>(cows[i + 1]))
         {
-            if (get<0> (cows[i]) > get<0> (cows[i + 1]))
-            {
-                continue;
-            }
-            min_time = max(min_time + 1, intercept_time);
-        }
-        else
-        {
-            if (get<0> (cows[i]) <= get<0> (cows[i + 1]))
+            if (get<0>(cows[i]) <= get<0>(cows[i + 1]))
             {
                 cout << -1 << endl;
                 return;
             }
-            max_time = min(max_time, intercept_time);
+            max_time = min(max_time, -(int)floor(((double)get<0>(cows[i]) - (double)get<0>(cows[i + 1])) / ((double)get<1>(cows[i]) - (double)get<1>(cows[i + 1]))));
+        }
+        else
+        {
+            if (get<0>(cows[i]) <= get<0>(cows[i + 1]))
+            {
+                cout << "-1" << endl;
+                return;
+            }
         }
     }
-    cout << min_time << " " << max_time << endl;
-    if (min_time > max_time)
+    // cout << min_time << " " << max_time << endl;
+    if (min_time >= max_time)
     {
         cout << "-1" << endl;
     }
@@ -82,8 +67,6 @@ void solve()
         cout << max(0, min_time) << endl;
     }
 }
-
-
 
 int main()
 {
