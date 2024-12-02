@@ -103,11 +103,6 @@ int main()
             {
                 continue;
             }
-
-
-
-
-
             vector<int> order;
 
             if (start_edge != -1)
@@ -130,18 +125,6 @@ int main()
         }
     }
 
-
-    // for (int i = 0; i < num_cereals; i++)
-    // {
-    //     cout << i << ": ";
-    //     for (pair<int, int> edge : forest[i])
-    //     {
-    //         cout << edge.first << ' ';
-    //     }
-    //     cout << en;
-    // }
-
-
     visited_edges.resize(num_cows, false);
 
     for (int a : final_order)
@@ -163,16 +146,4 @@ int main()
     {
         cout << a + 1 << en;
     }
-
-
-    
-
-
-
-
-
-
-
-
-
 }
