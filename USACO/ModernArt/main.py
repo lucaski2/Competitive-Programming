@@ -42,8 +42,10 @@ def count_possible_first_colors(n, canvas):
 
 
     return ans
+inp = open('art.in', 'r')
+out = open('art.out', 'w')
 
-n = int(input())
-canvas = [list(map(int, input().strip())) for _ in range(n)]
+n = int(inp.readline())
+canvas = [list(map(int, inp.readline().strip())) for _ in range(n)]
 
-print(count_possible_first_colors(n, canvas))
+print(count_possible_first_colors(n, canvas), file=out)
