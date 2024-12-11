@@ -1,49 +1,94 @@
 #include <bits/stdc++.h>
 #define ll long long
-#define mint 2147483647
+#define mll 2147483647
 #define mod 1e9 + 7
 #define en '\n'
 using namespace std;
 
 
-template<typename T> optional<T> less_or_equal(const set<T>& s, const T& value) { if (s.empty()) { return nullopt; } auto it = s.upper_bound(value); if (it == s.begin()) { return nullopt; }return *prev(it);}
 
-void solve()
+
+set<ll> get_divisors(ll n)
 {
-  int n;
-  cin >> n;
-  vector<ll> a(n);
-  for (auto &i : a)
+  set<ll> divisors;
+  for (ll i = 1; i * i <= n; i++)
   {
-    cin >> i;
-  }
-  vector<ll> no_dup;
-  set<ll> s;
-  for (int i = 0; i < n; i++)
-  {
-    if (s.find(a[i]) == s.end())
+    if (n % i == 0)
     {
-      no_dup.push_back(a[i]);
-      s.insert(a[i]);
+      divisors.insert(i);
+      divisors.insert(n / i);
     }
   }
 
-  n = no_dup.size();
-  a.resize(n);
-  for (int i = 0; i < n; i++)
+  return divisors;
+}
+
+void solve()
+{
+  ll n;
+  cin >> n;
+  set<ll> a_repl;
+  for (ll i = 0; i < n; i++)
   {
-    a[i] = no_dup[i];
+    ll num;
+    cin >> num;
+    a_repl.insert(num);
+  }
+  vector<ll> a;
+  for (ll num : a_repl)
+  {
+    a.push_back(num);
   }
 
-  ll max_val = *min_element(a.begin(), a.end()) / 4;
+  n = a.size();
 
-  ll largest = *max_element(a.begin(), a.end());
+  ll m = *min_element(a.begin(), a.end()) / 4;
+  if (n <= 3)
+  {
+    ll ans = (m) * (m + 1) / 2;
+    cout << ans << endl;
+    return;
+  }
 
-  ll ans = (max_val + 1) * max_val / 2;
   
-  // go through each element up to sqrt(max_val) and check if it is a valid, if not subtract it from ans
+  vector<ll> diffs;
+  for (ll i = 0; i < 4; i++)
+  {
+    for (ll j = i + 1; j < 4; j++)
+    {
+      diffs.push_back(abs(a[i] - a[j]));
+    }
+  }
 
-  //
+  set<ll> divisors;
+
+  for (ll i = 0; i < diffs.size(); i++)
+  {
+    set<ll> ret = get_divisors(diffs[i]);
+    for (ll asdf : ret)
+    {
+      divisors.insert(asdf);
+    }
+  }
+  ll ans = 0;
+  for (ll num : divisors)
+  {
+    // cout << num << endl;
+    if (num > m)
+    {
+      continue;
+    }
+    set<ll> differents;
+    for (ll i : a)
+    {
+      differents.insert(i % num);
+    }
+    if (differents.size() <= 3)
+    {
+      ans += num;
+    }
+  }
+  cout << ans << endl;
 
 
 
