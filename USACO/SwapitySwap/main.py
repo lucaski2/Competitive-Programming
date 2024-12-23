@@ -1,31 +1,38 @@
+import sys
 
-def transform(cur, a1, a2, b1, b2):
+def transform(cur, a1, a2):
     # reverse the order of the elements between a1 and a2
     cur[a1 - 1:a2] = cur[a1 - 1:a2][::-1]
-    # reverse the order of the elements between b1 and b2
-    cur[b1 - 1:b2] = cur[b1 - 1:b2][::-1]
 
+# Open input and output files
+with open('swap.in', 'r') as fin, open('swap.out', 'w') as fout:
+    sys.stdin = fin
+    sys.stdout = fout
 
-n, k = map(int, input().split())
+    # Read input
+    n, m, k = map(int, input().split())
+    start = list(range(1, n + 1))
+    a = list(range(1, n + 1))
 
-start = list(range(1, n + 1))
-a = list(range(1, n + 1))
-a1, a2 = map(int, input().split())
-b1, b2 = map(int, input().split())
+    changes = [list(map(int, input().split())) for _ in range(m)]
+    things = []
 
-transform(a, a1, a2, b1, b2)
+    for change in changes:
+        transform(start, *change)
+    k -= 1
+    things.append(start)
 
-am = 1
+    while k > 0 and start != a:
+        for change in changes:
+            transform(start, *change)
+        k -= 1
+        things.append(start)
 
-while a != start:
-    transform(a, a1, a2, b1, b2)
-    am += 1
+    if k == 0:
+        print(*start, sep='\n')
+    else:
+        print(*things[k % len(things)], sep='\n')
 
-k %= am
-
-for i in range(k):
-    transform(start, a1, a2, b1, b2)
-print(*start, sep='\n')
-
-
-
+    # Restore defaults
+    sys.stdin = sys.__stdin__
+    sys.stdout = sys.__stdout__
