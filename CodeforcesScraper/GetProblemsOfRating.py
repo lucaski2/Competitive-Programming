@@ -42,29 +42,34 @@ def generate_api_signature(method, params):
     hashed = hashlib.sha512(to_hash.encode()).hexdigest()
     return rand_str + hashed
 
-# Fetch user submissions
-def fetch_submissions():
-    method = "user.status"
-    time_stamp = str(int(time.time()))
+# Fetch all rated problems from Codeforces
+def fetch_problems():
+    method = "problemset.problems"
     params = {
-        "handle": HANDLE,
         "apiKey": API_KEY,
-        "time": time_stamp,
+        "time": int(time.time())
     }
     api_sig = generate_api_signature(method, params)
     params["apiSig"] = api_sig
-    url = f"{BASE_URL}{method}"
 
     try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()
-        data = response.json()
-        if data["status"] != "OK":
-            print(f"API Error: {data.get('comment', 'Unknown error')}")
+        response = requests.get(BASE_URL + method, params=params)
+        response_data = response.json()
+        if response_data["status"] != "OK":
+            print("Error fetching problems:", response_data.get("comment", "Unknown error"))
             return []
-        return data["result"]
+
+        problems = response_data["result"]["problems"]
+        rated_problems = [
+            Sorter(problem["contestId"], problem["index"])
+            for problem in problems
+            if "rating" in problem
+        ]
+
+        return rated_problems
+
     except requests.RequestException as e:
-        print(f"HTTP Error: {e}")
+        print("Request failed:", str(e))
         return []
 
 # Process submissions to extract solved problems

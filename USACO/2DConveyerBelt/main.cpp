@@ -4,220 +4,185 @@
 using namespace std;
 
 
-void solve(vector<vector<vector<pair<int, int>>>> &graph, vector<vector<bool>> &used)
-{
-  int n = graph.size();
-  queue<pair<int, int>> q;
-  vector<vector<bool>> visited(n, vector<bool>(n, false));
-  vector<vector<bool>> inComponent(n, vector<bool>(n, false));
-  for (int i = 0; i < n; i++)
-  {
-    for (int j = 0; j < n; j++)
-    {
-      if (!visited[i][j] && used[i][j])
-      {
-        vector<pair<int, int>> component;
-        q.push({i, j});
-        visited[i][j] = true;
-        bool ok = true;
-        while (!q.empty())
-        {
-          pair<int, int> cur = q.front();
-          q.pop();
-          component.push_back(cur);
-          for (pair<int, int> next : graph[cur.first][cur.second])
-          {
-            if (next.first < 0 || next.first >= n || next.second < 0 || next.second >= n)
-            {
-              ok = false;
-            }
-            else if (!visited[next.first][next.second] and used[next.first][next.second])
-            {
-              visited[next.first][next.second] = true;
-              q.push(next);
-            }
-            else if (!visited[next.first][next.second] and !used[next.first][next.second])
-            {
-              // try outward path
-              queue<pair<int, int>> q2;
-              q2.push(next);
-              component.push_back(next);
-              bool hit_edge = false;
-              visited[next.first][next.second] = true;
-              while (!q2.empty())
-              {
-                pair<int, int> cur2 = q2.front();
-                q2.pop();
-
-                if (used[cur2.first][cur2.second])
-                {
-                  for (pair<int, int> next2 : graph[cur2.first][cur2.second])
-                  {
-                    if (next2.first < 0 || next2.first >= n || next2.second < 0 || next2.second >= n)
-                    {
-                      hit_edge = true;
-                    }
-                    else if (!visited[next2.first][next2.second])
-                    {
-                      visited[next2.first][next2.second] = true;
-                      component.push_back(next2);
-                      q2.push(next2);
-                    }
-                  }
-                }
-                else
-                {
-                  for (pair<int, int> dir : vector<pair<int, int>>{{0, 1}, {0, -1}, {1, 0}, {-1, 0}})
-                  {
-                    pair<int, int> next2 = {cur2.first + dir.first, cur2.second + dir.second};
-                    if (next2.first < 0 || next2.first >= n || next2.second < 0 || next2.second >= n)
-                    {
-                      hit_edge = true;
-                    }
-                    else if (!visited[next2.first][next2.second])
-                    {
-                      visited[next2.first][next2.second] = true;
-                      q2.push(next2);
-                    }
-                  }
-                }
-              }
-              if (hit_edge)
-              {
-                ok = false;
-              }
-            }
-          }
-        }
-        cout << component.size() << endl;
-        if (ok)
-        {
-          for (pair<int, int> p : component)
-          {
-            inComponent[p.first][p.second] = true;
-          }
-        }
-      }
-    }
-  }
-
-  for (int i = 0; i < n; i++)
-  {
-    for (int j = 0; j < n; j++)
-    {
-      cout << (inComponent[i][j] ? 'X' : '.');
-    }
-    cout << endl;
-  }
-  cout << endl;
-
-  // for (int i = 0; i < n; i++)
-  // {
-  //   for (int j = 0; j < n; j++)
-  //   {
-  //     for (pair<int, int> next : graph[i][j])
-  //     {
-  //       cout << i << " " << j << " " << next.first << " " << next.second << endl;
-  //     }
-  //   }
-  // }
-  visited.resize(n, vector<bool>(n, false));
-  int ans = 0;
-  for (int i = 0; i < n; i++)
-  {
-    for (int j = 0; j < n; j++)
-    {
-      if (inComponent[i][j])
-      {
-        ans++;
-      }
-      else if (!visited[i][j])
-      {
-        // bfs
-        q.push({i, j});
-        bool hit_edge = false;
-        visited[i][j] = true;
-        int cur_size = 0;
-        while (!q.empty())
-        {
-
-          pair<int, int> cur = q.front();
-          q.pop();
-          // cout << cur.first << " " << cur.second << endl;
-          cur_size++;
-          for (pair<int, int> change : vector<pair<int, int>>{{0, 1}, {0, -1}, {1, 0}, {-1, 0}})
-          {
-            pair<int, int> next = {cur.first + change.first, cur.second + change.second};
-            if (next.first < 0 || next.first >= n || next.second < 0 || next.second >= n)
-            {
-              hit_edge = true;
-              continue;
-            }
-            if (!inComponent[next.first][next.second] and used[next.first][next.second])
-            {
-              hit_edge = true;
-            }
-            if (!visited[next.first][next.second] and !inComponent[next.first][next.second])
-            {
-              visited[next.first][next.second] = true;
-              q.push(next);
-              cur_size++;
-            }
-          }
-        }
-        if (!hit_edge)
-        {
-          ans += cur_size;
-        }
-      }
-    }
-  }
-  cout << "Sol: ";
-  cout << ans << endl;
-
-}
-
 int main()
 {
-  ios_base::sync_with_stdio(false);
-  cin.tie(NULL);
-  int n, q;
+  ll n, q;
   cin >> n >> q;
-
-  vector<vector<vector<pair<int, int>>>> graph(n, vector<vector<pair<int, int>>>(n, vector<pair<int, int>>()));
-  vector<vector<bool>> used(n, vector<bool>(n, false));
-
-  for (int i = 0; i < q; i++)
+  vector<vector<vector<pair<ll, ll>>>> reversed(n, vector<vector<pair<ll, ll>>>(n));
+  vector<tuple<ll, ll, char>> queries(q);
+  vector<vector<bool>> part_of_query(n, vector<bool>(n, false));
+  vector<pair<ll, ll>> edges;
+  for (ll i = 0; i < q; i++)
   {
-    int a, b;
-    cin >> a >> b;
+    ll a, b;
+    char c;
+    cin >> b >> a >> c;
     a--; b--;
-    char s;
-    cin >> s;
-    pair<int, int> dir;
-    if (s == 'R')
-    {
-      dir = {0, 1};
-    }
-    else if (s == 'L')
-    {
-      dir = {0, -1};
-    }
-    else if (s == 'U')
-    {
-      dir = {-1, 0};
-    }
-    else if (s == 'D')
-    {
-      dir = {1, 0};
-    }
-    used[a][b] = true;
 
-    graph[a][b].push_back({a + dir.first, b + dir.second});
-    // check if a + dir.first, b + dir.second is in bounds
-    if (a + dir.first < 0 || a + dir.first >= n || b + dir.second < 0 || b + dir.second >= n)
-    {} else graph[a + dir.first][b + dir.second].push_back({a, b});
-    solve(graph, used);
+    queries[i] = make_tuple(a, b, c);
+    part_of_query[a][b] = true;
+
+    ll dx = 0, dy = 0;
+    if (c == 'U')
+    {
+      dy = -1;
+    }
+    else if (c == 'D')
+    {
+      dy = 1;
+    }
+    else if (c == 'L')
+    {
+      dx = -1;
+    }
+    else if (c == 'R')
+    {
+      dx = 1;
+    }
+
+    ll nx = a + dx;
+    ll ny = b + dy;
+    if (nx >= 0 && nx < n && ny >= 0 && ny < n)
+    {
+      reversed[nx][ny].push_back(make_pair(a, b));
+    }
+    else 
+    {
+      edges.push_back(make_pair(a, b));
+    }
   }
-  return 0;
+  vector<pair<ll, ll>> changes = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+  for (ll i = 0; i < n; i++)
+  {
+    for (ll j = 0; j < n; j++)
+    {
+      if (!part_of_query[i][j])
+      {
+        for (auto change : changes)
+        {
+          ll dx = change.first;
+          ll dy = change.second;
+          ll nx = i + dx;
+          ll ny = j + dy;
+          if (nx >= 0 && nx < n && ny >= 0 && ny < n)
+          {
+            reversed[nx][ny].push_back(make_pair(i, j));
+          }
+          else
+          {
+            edges.push_back(make_pair(i, j));
+            break;
+          }
+        }
+      }
+    }
+  }
+
+
+  vector<vector<bool>> visited(n, vector<bool>(n, false));
+  for (auto edge : edges)
+  {
+    ll x = edge.first;
+    ll y = edge.second;
+    if (!visited[x][y])
+    {
+      queue<pair<ll, ll>> q;
+      q.push(make_pair(x, y));
+      visited[x][y] = true;
+      // cout << x << " " << y << endl;
+      while (!q.empty())
+      {
+        pair<ll, ll> current = q.front();
+        q.pop();
+        ll cx = current.first;
+        ll cy = current.second;
+        for (auto next : reversed[cx][cy])
+        {
+          ll nx = next.first;
+          ll ny = next.second;
+          if (!visited[nx][ny])
+          {
+            visited[nx][ny] = true;
+            // cout << nx << " " << ny << endl;
+            q.push(make_pair(nx, ny));
+          }
+        }
+      }
+    }
+  }
+
+
+
+
+  ll ans = 0;
+  for (ll i = 0; i < n; i++)
+  {
+    for (ll j = 0; j < n; j++)
+    {
+      // cout << visited[i][j] << " ";
+      ans += 1 - visited[i][j];
+    }
+    // cout << endl;
+  }
+
+  vector<ll> answer(q);
+  for (ll i = q - 1; i >= 0; i--)
+  {
+    answer[i] = ans;
+    ll a = get<0>(queries[i]);
+    ll b = get<1>(queries[i]);
+
+    if (visited[a][b]) continue;
+
+    bool will_visit = false;
+    for (auto change : changes)
+    {
+      ll dx = change.first;
+      ll dy = change.second;
+      ll nx = a + dx;
+      ll ny = b + dy;
+      if (nx >= 0 && nx < n && ny >= 0 && ny < n)
+      {
+        if (visited[nx][ny])
+        {
+          will_visit = true;
+          break;
+        }
+        reversed[nx][ny].push_back(make_pair(a, b));
+      }
+      else will_visit = true;
+    }
+
+
+    if (!will_visit) continue;
+
+
+
+
+    queue<pair<ll, ll>> q;
+    q.push(make_pair(a, b));
+    visited[a][b] = true;
+    ans--;
+    while (!q.empty())
+    {
+      pair<ll, ll> current = q.front();
+      q.pop();
+      ll cx = current.first;
+      ll cy = current.second;
+      for (auto next : reversed[cx][cy])
+      {
+        ll nx = next.first;
+        ll ny = next.second;
+        if (!visited[nx][ny])
+        {
+          visited[nx][ny] = true;
+          ans--;
+          q.push(make_pair(nx, ny));
+        }
+      }
+    }
+
+  }
+  for (ll i = 0; i < q; i++) cout << answer[i] << endl;
 }

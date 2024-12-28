@@ -15,7 +15,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             # Parse JSON data
             data = json.loads(post_data)
             # print("Received data:", data)
-            
+
+            # get current directory
+            path = '/'.join(os.getcwd().split("/")[:-1])
+
             # Extract relevant fields
             problem_name = data['name'].replace(" ", "_").replace(".", "").replace("/", "")[2:]
             problem_group = data['group']
@@ -23,7 +26,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             tests = data['tests']
 
             # Create a folder for the problem
-            os.makedirs(problem_name, exist_ok=True)
+            os.makedirs(problem_name)
             os.chdir(problem_name)
             os.makedirs("test_data")
             os.chdir("test_data")
@@ -42,16 +45,13 @@ class RequestHandler(BaseHTTPRequestHandler):
             os.chdir("..")
             os.system("touch main.cpp main.py")
 
-            os.chdir("../Templates")
-            # print current directory
-            print(os.getcwd())
 
 
-            with open("PYTHON_TEMPLATE.py", "r") as template:
+            with open(path + "/CodeforcesScraper/Templates/PYTHON_TEMPLATE.py", "r") as template:
                 with open(f"../{problem_name}/main.py", "w") as main_file:
                     main_file.write(template.read())
             
-            with open("CPP_TEMPLATE.cpp", "r") as template:
+            with open(path + "/CodeforcesScraper/Templates/CPP_TEMPLATE.cpp", "r") as template:
                 with open(f"../{problem_name}/main.cpp", "w") as main_file:
                     main_file.write(template.read())
             os.chdir("..")
