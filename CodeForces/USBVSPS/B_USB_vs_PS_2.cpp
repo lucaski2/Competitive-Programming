@@ -1,0 +1,84 @@
+#include <bits/stdc++.h>
+using ll = long long;
+using namespace std;
+
+const ll mod = 1000000000 + 7;
+const char en = '\n';
+
+
+template<typename T> optional<T> less_or_equal(const set<T>& s, const T& value) { if (s.empty()) { return nullopt; } auto it = s.upper_bound(value); if (it == s.begin()) { return nullopt; }return *prev(it);}
+
+ll pow(ll a, ll b, ll m){
+    ll ans = 1;
+    while(b){
+        if (b&1) ans = (ans*a) % m;
+        b /= 2;
+        a = (a*a) % m;
+    }
+    return ans;
+}
+
+
+
+void solve()
+{
+  ll a, b, c;
+  cin >> a >> b >> c;
+
+  ll m;
+  cin >> m;
+
+  vector<pair<ll, bool>> mice(m);
+  for (ll i = 0; i < m; i++)
+  {
+    cin >> mice[i].first;
+    string s;
+    cin >> s;
+    mice[i].second = (s[0] == 'P');
+  }
+
+  sort(mice.begin(), mice.end());
+  ll num = 0;
+  ll ans = 0;
+  for (ll i = 0; i < m; i++)
+  {
+    if (mice[i].second and b > 0)
+    {
+      ans += mice[i].first;
+      b--;
+      num++;
+    }
+    else if (mice[i].second and c > 0)
+    {
+      ans += mice[i].first;
+      c--;
+      num++;
+    }
+    else if (!mice[i].second and a > 0)
+    {
+      ans += mice[i].first;
+      a--;
+      num++;
+    }
+    else if (!mice[i].second and c > 0)
+    {
+      ans += mice[i].first;
+      c--;
+      num++;
+    }
+  }
+  cout << num << ' ' << ans << endl;
+  
+
+}
+
+int main()
+{
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  ll t = 1;
+  while (t--)
+  {
+      solve();
+  }
+}

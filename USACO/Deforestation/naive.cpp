@@ -1,4 +1,8 @@
 #include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace __gnu_pbds;
 #define ll long long
 using namespace std;
 
@@ -8,14 +12,8 @@ bool compare(tuple<int, int, int> a, tuple<int, int, int> b)
 }
 
 template<typename T> optional<T> less_or_equal(const set<T>& s, const T& value) { if (s.empty()) { return nullopt; } auto it = s.upper_bound(value); if (it == s.begin()) { return nullopt; }return *prev(it);}
+template<class T> using ordered_multiset = tree<T, null_type, greater<T>, rb_tree_tag, tree_order_statistics_node_update>;
 
-struct desc
-{
-  bool operator()(int a, int b) const
-  {
-    return a < b;
-  }
-};
 
 void solve()
 {
@@ -37,19 +35,14 @@ void solve()
   }
 
   sort(restrictions.begin(), restrictions.end(), compare);
-  set<int, desc> used;
+  ordered_multiset<int> used;
 
   for (int i = 0; i < k; i++)
   {
     int start = get<0>(restrictions[i]);
     int end = get<1>(restrictions[i]);
-    int ptr = used.lower_bound(start) == used.end() ? -1 : *used.lower_bound(start);
     int num_needed = get<2>(restrictions[i]);
-    if (ptr != -1)
-    {
-      // distance from start 
-      num_needed -= distance(used.lower_bound(start), used.end());
-    }
+    num_needed -= used.order_of_key(start - 1);
 
     while (num_needed > 0)
     {
