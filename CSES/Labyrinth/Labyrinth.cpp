@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
 #define int long long
+#define s second 
+#define f first
 using namespace std;
 
 const int mod = 1000000000 + 7;
@@ -25,75 +27,87 @@ void solve(int tc)
   int n, m;
   cin >> n >> m;
 
-  vector<vector<bool>> visited(n, vector<bool>(m));
   vector<vector<char>> grid(n, vector<char>(m));
+  pair<int, int> A;
+  pair<int, int> B;
   for (int i = 0; i < n; i++)
   {
     for (int j = 0; j < m; j++)
     {
       cin >> grid[i][j];
+      if (grid[i][j] == 'A') A = {i, j};
+      if (grid[i][j] == 'B') B = {i, j};
     }
   }
-  string cur;
+  vector<vector<int>> depth(n, vector<int>(m, -1));
+  vector<vector<char>> parent(n, vector<char>(m, 0));
 
-  function<void(int, int)> dfs = [&](int x, int y)
+  depth[A.f][A.s] = 0;
+  
+  queue<pair<int, int>> q;
+  q.push(A);
+
+  while (!q.empty())
   {
+    pair<int, int> cur = q.front();
+    q.pop();
 
-    if (grid[x][y] == 'B')
+    if (grid[cur.f][cur.s] == '#') continue;
+
+    vector<pair<int, int>> delt = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    for (pair<int, int> del : delt)
     {
-      cout << "YES" << endl;
-      cout << cur.size() << endl;
-      cout << cur << endl;
-      exit(0);
-    }
-    visited[x][y] = true;
-
-
-
-    for (int i = -1; i <= 1; i++)
-    {
-      for (int j = -1; j <= 1; j++)
-      {
-        if (i != 0 and j != 0)
-        {
-          continue;
-        }
-        int nx = x + i, ny = y + j;
-        if (nx < 0 or nx >= n or ny < 0 or ny >= m)
-        {
-          continue;
-        }
-        
-        if (visited[nx][ny] or grid[nx][ny] == '#') continue;
-        if (i == 0 and j == 1)
-        {
-          cur.append("R");
-        }
-        else if (i == 0)
-        {
-          cur.append("L");
-        }
-        else if (i == 1)
-        {
-          cur.append("D");
-        }
-        else cur.append("U");
-
-        dfs(nx, ny);
-        cur.pop_back();
-      }
-    }
-  };
-
-
-  for (int i = 0; i < n; i++)
-  {
-    for (int j = 0; j < m; j++)
-    {
-      if (grid[i][j] == 'A') dfs(i, j);
+      int nx = cur.f + del.f;
+      int ny = cur.s + del.s;
+      if (nx < 0 or nx >= n or ny < 0 or ny >= m) continue;
+      // cout << nx << ' ' << ny << endl;
+      if (depth[nx][ny] >= 0) continue;
+      depth[nx][ny] = depth[cur.f][cur.s] + 1;
+      if (del.f == -1) parent[nx][ny] = 'L';
+      if (del.f == 1) parent[nx][ny] = 'R';
+      if (del.s == 1) parent[nx][ny] = 'D';
+      if (del.s == -1) parent[nx][ny] = 'U';
+      // cout << "asdf" << endl;
+      q.push({nx, ny});
     }
   }
-  cout << "NO" << endl;
+  
+
+  if (!parent[B.f][B.s]) 
+  {
+    cout << "NO" << endl;
+    return;
+  }
+
+
+  string ans = "";
+  while (parent[B.f][B.s])
+  {
+    if (parent[B.f][B.s] == 'L') 
+    {
+      ans += "R";
+      B.s--;
+    }
+    if (parent[B.f][B.s] == 'R')
+    {
+      ans += "L";
+      B.s++;
+    }
+    if (parent[B.f][B.s] == 'U') 
+    {
+      ans += "D";
+      B.f--;
+    }
+    if (parent[B.f][B.s] == 'D')
+    {
+      ans += "U";
+      B.f++;
+    }
+  }
+
+  cout << "YES" << endl << ans.size() << endl;
+  cout << ans << endl;
 
 
 }

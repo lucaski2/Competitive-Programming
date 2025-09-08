@@ -18,47 +18,48 @@ int pow(int a, int b, int m){
     return ans;
 }
 
-struct sorter
-{
-  vector<int> &arr;
-  map<int, int> mp;
-  sorter(vector<int> &a) : arr(a) {
-    vector<pair<int, int>> temp;
-    for (int i = 0; i < arr.size(); i++)
-    {
-      temp.push_back({arr[i], i});
-    }
-    sort(temp.begin(), temp.end());
-    for (int i = 0; i < temp.size(); i++)
-    {
-      mp[temp[i].second] = i;
-    }
-  }
-
-  bool get_ind(int i)
-  {
-    return arr[mp[i]];
-  }
-};
-
-
 void solve(int tc)
 {
   int n, q;
   cin >> n >> q;
 
-  vector<int> a(n), b(n);
+  vector<pair<int, int>> a(n), b(n);
   for (int i = 0; i < n; i++)
-    cin >> a[i];
+  {
+    cin >> a[i].first;
+    a[i].second = i;
+  }
   for (int i = 0; i < n; i++)
-    cin >> b[i];
+  {
+    cin >> b[i].first;
+    b[i].second = i;
+  }
 
+  // use map to store start index to arr index
 
-  
+  sort(a.begin(), a.end());
+  sort(b.begin(), b.end());
 
+  map<int, int> a_start;
+  map<int, int> b_start;
+  int cur = 1;
+  for (int i = 0; i < n; i++)
+  {
+    a_start[a[i].second] = i;
+    b_start[b[i].second] = i;
+    cur *= min(a[i].first, b[i].first);
+    cur %= mod;
+  }
+  cout << cur << ' ';
+  for (int i = 0; i < q; i++)
+  {
+    int type, ind;
+    cin >> type >> ind;
+    ind--;
 
-
-
+    
+      
+  }
 }
 
 signed main()

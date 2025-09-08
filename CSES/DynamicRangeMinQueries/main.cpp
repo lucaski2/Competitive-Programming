@@ -79,16 +79,11 @@ int main()
 
     for (int i = 0; i < q; i++)
     {
-        ll a, b, c;
-        cin >> a >> b >> c;
-        if (a == 1)
-        {
-            add(c, b - 1, tree, n);
-        }
-        else
-        {
-            cout << get(1, 0, n - 1, b - 1, c - 1, tree) << en;
-        }
+        ll b, c;
+        cin >> b >> c;
+        
+        cout << get(1, 0, n - 1, b, c - 1, tree) << en;
+        
     }
     // for (int i = 0; i < 2 * n; i++)
     // {

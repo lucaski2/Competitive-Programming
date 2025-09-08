@@ -1,15 +1,20 @@
 #include <bits/stdc++.h>
-using ll = long long;
+#define int long long
+#define double long double
 using namespace std;
 
-const ll mod = 1000000000 + 7;
+// Problem URL here:
+// Start time here: 
+// End time here:
+
+int mod = 1000000000 + 7;
 const char en = '\n';
 
 
 template<typename T> optional<T> less_or_equal(const set<T>& s, const T& value) { if (s.empty()) { return nullopt; } auto it = s.upper_bound(value); if (it == s.begin()) { return nullopt; }return *prev(it);}
 
-ll pow(ll a, ll b, ll m){
-    ll ans = 1;
+int pow(int a, int b, int m){
+    int ans = 1;
     while(b){
         if (b&1) ans = (ans*a) % m;
         b /= 2;
@@ -22,15 +27,25 @@ ll pow(ll a, ll b, ll m){
 
 void solve(int tc)
 {
+  int n;
+  cin >> n >> mod;
 
+  int ans = 1;
+  for (int i = 1; i <= n; i++)
+  {
+    ans = (ans * i + pow(-1, i));
+    ans %= mod;
+    cout << ans % mod << ' ';
+  }
+  cout << endl;
 }
 
-int main()
+signed main()
 {
   ios_base::sync_with_stdio(false);
-  cin.tie(NULL);
-  int t;
-  cin >> t;
+  cin.tie(nullptr);
+  int t = 1;
+  // cin >> t;
   for (int i = 1; i <= t; i++)
   {
     solve(i);

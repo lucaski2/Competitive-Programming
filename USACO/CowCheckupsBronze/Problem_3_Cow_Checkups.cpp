@@ -36,6 +36,7 @@ void solve(int tc)
   
 
   vector<int> ans(n + 1);
+  vector<vector<short>> dp(n, vector<short>(n));
 
   for (int i = 0; i < n; i++)
   {
@@ -44,6 +45,7 @@ void solve(int tc)
     {
       s += a[j] == b[j];
     }
+
     ans[s]++;
     int l = i;
     int r = i;
